@@ -1,25 +1,51 @@
-# This is a sample Python script.
+import csv
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+PATH = "base.csv"
+MIN_FREQ = 2
+MIN_CONF = 0.7
+
 
 class Node:
-    """节点类"""
-    def __init__(self, item):
-        self.item = item
+    def __init__(self, key, parent):
+        self.key = key
         self.next = None
-        self.prev = None
-        self.Node = None
+        self.parent = parent
+        self.Node = []
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+class FP_Tree:
+    def __init__(self, counter, data):
+        self.counter = counter
+        self.data = data
+        self.root = Node(None, None)
+        self.build()
+
+    def build(self):
+        return
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    with open(PATH, "r") as o:
+        data = []
+        counter = {}
+        refined_counter = {}
+        f = csv.reader(o)
+        # header = next(f)
+        for row in f:
+            for prop in row:
+                value = counter.get(prop)
+                if value is None:
+                    counter[prop] = 1
+                else:
+                    counter[prop] = value + 1
+            data.append(row)
+        for key in counter:
+            value = counter[key]
+            if value >= MIN_FREQ:
+                refined_counter[key] = value
 
+        print(data)
+        print(counter)
+        print(refined_counter)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+        tree = FP_Tree(refined_counter, data)
