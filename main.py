@@ -10,7 +10,7 @@ class Node:
         self.key = key
         self.next = None
         self.parent = parent
-        self.Node = []
+        self.children = []
 
 
 class FP_Tree:
