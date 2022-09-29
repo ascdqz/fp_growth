@@ -8,9 +8,11 @@ MIN_CONF = 0.7
 class Node:
     def __init__(self, key, parent):
         self.key = key
+        self.count = 0
         self.next = None
+        # self.prev = None
         self.parent = parent
-        self.children = []
+        self.children = {}
 
 
 class FP_Tree:
@@ -18,11 +20,40 @@ class FP_Tree:
         self.counter = counter
         self.data = data
         self.root = Node(None, None)
+        self.dict = {}
         self.build()
 
     def build(self):
         # todo
+        for d in self.data:
+            # if not rearrange, use this
+            # not stable
+            # d.sort(key=self.counter.get, reverse=True)
+            d.sort(key=self.counter.get)
+            pointer = self.root
+            for i in d:
+                val = pointer.children.get(i)
+                if val is None:
+                    child = Node(i, pointer)
+                    pointer.children[i] = child
+                    pointer = child
+                    self.add_new_node(child)
+                else:
+                    val.count += 1
+                    pointer = val
         return
+
+    def add_new_node(self, node):
+        val = self.dict.get(node.key)
+        if val is None:
+            self.dict[node.key] = node
+        else:
+            prev = val
+            cur = val.next
+            while cur is not None:
+                prev = cur
+                cur = cur.next
+            prev.next = node
 
 
 def rearrange_dict(dic):
@@ -65,10 +96,10 @@ def pre_processing(o):
             continue
         processed_data.append(attr)
 
-    print("origin data: ", data)
+    # print("origin data: ", data)
     print("freq data: ", processed_data)
-    print("origin counter: ", counter)
-    print("freq counter", refined_counter)
+    # print("origin counter: ", counter)
+    # print("freq counter", refined_counter)
     refined_counter = rearrange_dict(refined_counter)
     print("index of freq attrs", refined_counter)
     return processed_data, refined_counter
