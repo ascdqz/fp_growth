@@ -6,7 +6,7 @@
 import csv
 
 # an example from https://blog.csdn.net/weixin_43317943/article/details/122094461?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-1-122094461-blog-60132224.pc_relevant_default&spm=1001.2101.3001.4242.2&utm_relevant_index=3
-PATH = "base.csv"
+PATH = "DataSetA.csv"
 MIN_FREQ = 3
 MIN_CONF = 0.7
 
@@ -177,12 +177,12 @@ def pre_processing(o):
         processed_data.append(attr)
 
     # print("origin data: ", data)
-    print("d:freq data : ", processed_data)
+    #print("d:freq data : ", processed_data)
     #print("origin counter: ", counter)
     #print("freq counter", refined_counter)
     refined_counter = rearrange_dict(refined_counter)
     a=[v[0] for v in sorted(refined_counter.items(),key=lambda p:p[1],reverse=True)]
-    print("c:index of freq attrs", refined_counter)
+    #print("c:index of freq attrs", refined_counter)
     # example: {'r': 4, 'z': 0, 'y': 2, 'x': 1, 't': 5, 's': 3}
     # but the order of same value is random, which will change the structure of FP Tree
     return processed_data, refined_counter,a
@@ -196,6 +196,7 @@ if __name__ == '__main__':
 
         frequant_item_list=tree.minedtree()
         print(frequant_item_list)
+
 
 
 
