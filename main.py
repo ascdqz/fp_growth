@@ -1,14 +1,8 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
 import csv
 
-# an example from https://blog.csdn.net/weixin_43317943/article/details/122094461?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-1-122094461-blog-60132224.pc_relevant_default&spm=1001.2101.3001.4242.2&utm_relevant_index=3
 PATH = "DataSetA.csv"
-MIN_FREQ = 3
-MIN_CONF = 0.7
+MIN_FREQ = 1000
+MIN_CONF = 0.9
 
 
 class Node:
@@ -22,7 +16,7 @@ class Node:
 
 
 class FP_Tree:
-    def __init__(self, data, counter,sitems):
+    def __init__(self, data, counter, sitems):
         self.counter = counter
         self.data = data
         self.root = Node(None, None)
@@ -30,12 +24,9 @@ class FP_Tree:
         self.prefix_path = {}
         self.build()
         self.get_prefix_path()
-        self.frequant_itemlist=[]
-        self.sitems=sitems
-        return
+        self.sitems = sitems
 
     def build(self):
-        # todo
         for d in self.data:
             # if not rearrange, use this
             # not stable
@@ -43,9 +34,7 @@ class FP_Tree:
             d.sort(key=self.counter.get)
             pointer = self.root
             for i in d:
-
                 val = pointer.children.get(i)
-
                 if val is None:
                     child = Node(i, pointer)
                     pointer.children[i] = child
@@ -68,7 +57,6 @@ class FP_Tree:
             prev.next = node
 
     def get_prefix_path(self):
-
         for i in self.dict:
             # entry node
             val = self.dict[i]
@@ -86,20 +74,25 @@ class FP_Tree:
                 pointer = pointer.next
             self.prefix_path[i] = cur_prefix_path
 
-    def minedtree(self):
-        xiao=[]
-        da=[]
-        self.frequant_itemlist=minetree(self.root,self.sitems,xiao,da,self.prefix_path)
-        return self.frequant_itemlist
+    def get_mined_tree(self):
+        return self.mine(self.sitems, [], [], self.prefix_path)
 
-
-
+    def mine(self, item_lis, xiao, da, prefix):
+        for item in item_lis:
+            lis = xiao.copy()
+            lis.append(item)
+            da.append(lis)
+            d = prefix_to_d(item, prefix)
+            data, c, a = pre_processing(d)
+            tree = FP_Tree(data, c, a)
+            if a is not None:
+                self.mine(a, lis, da, tree.prefix_path)
+        return da
 
 
 def prefix_to_d(key, prefix):
     lis = []
     lis1 = []
-    lis2 = []
     for item in prefix[key]:
         count = item[0]
         for temp in item[1]:
@@ -110,39 +103,17 @@ def prefix_to_d(key, prefix):
             lis.append(lis2)
             count -= 1
         lis1.clear()
-    lis2='nb'
-
     return lis
 
-def minetree(root,itemlis,xiao,da,prefix):
-
-
-    for item in itemlis:
-        lis=xiao.copy()
-        lis.append(item)
-        da.append(lis)
-        d=prefix_to_d(item,prefix)
-        data,c,a=pre_processing(d)
-        tree=FP_Tree(data,c,a)
-        contree=tree.root
-        prefi=tree.prefix_path
-        items=a
-        if items!=None:
-            minetree(contree,items,lis,da,prefi)
-
-    return da
 
 def rearrange_dict(dic):
     val = list(dic.values())
     val.sort(reverse=True)
-
     refined_dic = {}
     for i in dic:
         index = val.index(dic[i])
-
         refined_dic[i] = index
         val[index] = 'x'
-
     return refined_dic
 
 
@@ -151,12 +122,10 @@ def pre_processing(o):
     processed_data = []
     counter = {}
     refined_counter = {}
-
     # header = next(f)
     for row in o:
         for prop in row:
             value = counter.get(prop)
-
             if value is None:
                 counter[prop] = 1
             else:
@@ -175,29 +144,22 @@ def pre_processing(o):
         if len(attr) == 0:
             continue
         processed_data.append(attr)
-
     # print("origin data: ", data)
-    #print("d:freq data : ", processed_data)
-    #print("origin counter: ", counter)
-    #print("freq counter", refined_counter)
+    # print("d:freq data : ", processed_data)
+    # print("origin counter: ", counter)
+    # print("freq counter", refined_counter)
     refined_counter = rearrange_dict(refined_counter)
-    a=[v[0] for v in sorted(refined_counter.items(),key=lambda p:p[1],reverse=True)]
-    #print("c:index of freq attrs", refined_counter)
+    a = [v[0] for v in sorted(refined_counter.items(), key=lambda p: p[1], reverse=True)]
+    # print("c:index of freq attrs", refined_counter)
     # example: {'r': 4, 'z': 0, 'y': 2, 'x': 1, 't': 5, 's': 3}
     # but the order of same value is random, which will change the structure of FP Tree
-    return processed_data, refined_counter,a
+    return processed_data, refined_counter, a
 
 
 if __name__ == '__main__':
     with open(PATH, "r") as o:
         f = csv.reader(o)
-        d, c,a = pre_processing(f)
-        tree = FP_Tree(d, c,a)
-
-        frequant_item_list=tree.minedtree()
-        print(frequant_item_list)
-
-
-
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+        d, c, a = pre_processing(f)
+        tree = FP_Tree(d, c, a)
+        freq_item_list = tree.get_mined_tree()
+        print(freq_item_list)
