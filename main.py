@@ -1,6 +1,8 @@
 import csv
+import os
 import time
 import tracemalloc
+from datetime import datetime
 
 PATH = "DataSetA.csv"
 MIN_FREQ = 1000
@@ -158,23 +160,44 @@ def pre_processing(o):
     return processed_data, refined_counter, a
 
 
+class Tracer:
+    def __init__(self, time, mem, result):
+        self.log_path = "log/" + PATH[0:-4] + "_" + str(datetime.now())[0:19] + ".txt"
+        self.info = {"dataset": PATH, "MIN_FREQ": MIN_FREQ, "MIN_CONF": MIN_CONF, "time_cons": time, "mem_cons": mem,
+                     "result": result}
+
+    def output(self):
+        print(self.info["result"])
+        print("total time consumption:", self.info["time_cons"])
+        print("total storage consumption:", self.info["mem_cons"])
+        l = os.listdir()
+        if "log" not in l:
+            os.mkdir("log")
+        with open(self.log_path, 'w', encoding='utf-8') as o:
+            for i in self.info:
+                if i == "result":
+                    o.write(i + ": " + '\n')
+                    for j in range(len(self.info[i])):
+                        o.write(str(self.info[i][j]) + '\n')
+                else:
+                    o.write(i + ": " + str(self.info[i]) + '\n')
+
+
 if __name__ == '__main__':
     start = time.time()
     tracemalloc.start()
-
+    info = {}
     with open(PATH, "r") as o:
         f = csv.reader(o)
         d, c, a = pre_processing(f)
         tree = FP_Tree(d, c, a)
-        freq_item_list = tree.get_mined_tree()
-        print(freq_item_list)
+        result = tree.get_mined_tree()
     end = time.time()
     # The used time for mem trace shouldn't be included
     total = end - start
-    print("total time consumption:", total, "s")
     mem_snapshot = tracemalloc.take_snapshot()
     stat = mem_snapshot.statistics('filename')
     sum = 0
     for s in stat:
         sum = sum + s.size
-    print("total storage consumption:", str(sum / 1024), "KiB")
+    Tracer(str(total) + " s", str(sum / 1024) + " KB", result).output()
