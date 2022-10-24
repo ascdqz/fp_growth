@@ -137,7 +137,7 @@ def pre_processing(o):
         data.append(row)
     for key in counter:
         value = counter[key]
-        if value >= MIN_FREQ:
+        if value >= MIN_FREQ and key != '':
             refined_counter[key] = value
     for i in data:
         attr = []
@@ -163,6 +163,7 @@ def pre_processing(o):
 class Tracer:
     def __init__(self, time, mem, result):
         self.log_path = "log/" + PATH[0:-4] + "_" + str(datetime.now())[0:19] + ".txt"
+        self.log_path = self.log_path.replace(':', '-')
         self.info = {"dataset": PATH, "MIN_FREQ": MIN_FREQ, "MIN_CONF": MIN_CONF, "time_cons": time, "mem_cons": mem,
                      "result": result}
 
